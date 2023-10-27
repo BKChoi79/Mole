@@ -25,10 +25,6 @@ namespace UI.Popup
             {
                 Close();
             }
-            else if (name == "Button - Other")
-            {
-                PopupNormal popup = UIManager.Instance.OpenPopup<PopupNormal>("UI/PopupNormal");
-            }
         }
     }
 }
