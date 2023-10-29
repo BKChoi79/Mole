@@ -14,12 +14,11 @@ namespace Common.Global
         private Pool<AudioSource> effect = null;
         private AudioMixer mixer = null;
 
+        private Transform root = null;
+
         protected override bool Init()
         {
-            //gameObject.name = string.Format("singleton - {0}", Tag);
-
             mixer = ResourcesManager.Instance.LoadInBuild<AudioMixer>("AudioMixer");
-
             AudioSource prefab = ResourcesManager.Instance.LoadInBuild<AudioSource>("Audio Source");
             musics = Pool<AudioSource>.Create(prefab, transform, 1);
             effect = Pool<AudioSource>.Create(prefab, transform, 10);
@@ -27,9 +26,22 @@ namespace Common.Global
             return true;
         }
 
+        public void InitList(Transform root, AudioClip[] list)
+        {
+            soundTable.Clear();
+
+            this.root = root;
+
+            foreach (var clip in list)
+            {
+                soundTable.Add(clip.name, clip);
+            }
+        }
+
+        /*
         public bool Load()
         {
-            AudioClip[] clips = ResourcesManager.Instance.LoadBudleAll<AudioClip>();
+            AudioClip[] clips = ResourcesManager.Instance.LoadAllInBuild<AudioClip>("Sounds");
             foreach (var clip in clips)
             {
                 soundTable.Add(clip.name, clip);
@@ -37,6 +49,7 @@ namespace Common.Global
 
             return true;
         }
+        */
 
         private IEnumerator ReturnEffect(AudioSource audio){
             yield return new WaitForSeconds(audio.clip.length);
@@ -49,7 +62,7 @@ namespace Common.Global
    
         }
 
-        public void PlayEffect( string name)
+        public void PlayEffect(string name)
         {
             if( soundTable.ContainsKey( name ) == false )
                 return;

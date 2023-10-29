@@ -53,14 +53,17 @@ namespace Common.Global
         /// <returns></returns>
         private IEnumerator LoadScene(string sceneName)
         {
-            UIManager.Instance.Clear();
+
             CurrScene = null;
             yield return null;
 
+            UIManager.Instance.Clear();
+            
             var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             async.allowSceneActivation = true;
             async.completed += (AsyncOperation operation) => {
-                SceneBase changeScnene = null;
+
+                /*
                 if (_scenes.TryGetValue(sceneName, out SceneBase scene) == true)
                 {
                     changeScnene = scene;
@@ -70,7 +73,14 @@ namespace Common.Global
                     changeScnene = GetScene(sceneName);
                     _scenes.Add(sceneName, changeScnene);
                 }
-              
+                */
+
+          
+
+                var root = GetRoot();
+                var changeScnene = GetScene(sceneName);
+                UIManager.Instance.SetRoot(root);
+
                 CurrScene = changeScnene;
                 CurrScene.MainCamera = Camera.main;
                 CurrScene.Init(Param);
@@ -111,6 +121,23 @@ namespace Common.Global
             }
 
             return sceneObject;
+        }
+
+        private GameObject GetRoot()
+        {
+            GameObject root = null;
+            var scene = SceneManager.GetActiveScene();
+            var objects = scene.GetRootGameObjects();
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (objects[i].name == "UIRoot")
+                {
+                    root = objects[i];
+                    break;
+                }
+            }
+
+            return root;
         }
 
         private SceneBase CreateSceneObject(string sceneName)
