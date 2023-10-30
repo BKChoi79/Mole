@@ -17,9 +17,13 @@ namespace Common.Global
         private CanvasController _controllerEtc;
         private Transform _cover;
 
-        // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         protected override bool Init()
         {
+            /*
             const string uiRoot = "UI/UIRoot";
             var prefab = ResourcesManager.Instance.LoadInBuild<GameObject>(uiRoot);
             var root = Instantiate(prefab, transform);
@@ -45,9 +49,43 @@ namespace Common.Global
 
             _cover = root.transform.Find("Image - dim");
             _cover.gameObject.SetActive(false);
+            */
             return true;
         }
 
+        public void SetRoot(GameObject root)
+        {
+            /*
+            if (root == null)
+            {
+                const string uiRoot = "UI/UIRoot";
+                var prefab = ResourcesManager.Instance.LoadInBuild<GameObject>(uiRoot);
+                root = Instantiate(prefab, parent);
+            }
+            root.name = "UIRoot";
+            */
+
+            root.transform.position = new Vector3(100, 0, 0);
+            _canvasMain = root.GetComponent<CanvasGroup>();
+            _controllerMenu = new CanvasController();
+            _controllerMenu.Init(root.transform.Find("Canvas - menu"));
+            _controllerHud = new CanvasController();
+            _controllerHud.Init(root.transform.Find("Canvas - hud"));
+            _controllerPopup = new CanvasController();
+            _controllerPopup.Init(root.transform.Find("Canvas - popup"));
+            _controllerEtc = new CanvasController();
+            _controllerEtc.Init(root.transform.Find("Canvas - etc"));
+
+            _cover = root.transform.Find("Image - dim");
+            _cover.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="menuName"></param>
+        /// <returns></returns>
         public T OpenMenu<T>(string menuName) where T : MenuBase
         {
             var ret = _controllerMenu.Open<T>(menuName);
@@ -59,6 +97,12 @@ namespace Common.Global
             return ret;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hudName"></param>
+        /// <returns></returns>
         public T OpenHud<T>(string hudName) where T : HudBase
         {
             var ret = _controllerPopup.Open<T>(hudName);
@@ -70,6 +114,12 @@ namespace Common.Global
             return ret;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="popupName"></param>
+        /// <returns></returns>
         public T OpenPopup<T>(string popupName) where T : PopupBase
         {
             var ret = _controllerPopup.Open<T>(popupName);
@@ -82,6 +132,12 @@ namespace Common.Global
             return ret;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="etcName"></param>
+        /// <returns></returns>
         public T OpenEtc<T>(string etcName) where T : UIObject.UIObject
         {
             var ret = _controllerPopup.Open<T>(etcName);
@@ -94,33 +150,57 @@ namespace Common.Global
             return ret;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="popupName"></param>
+        /// <returns></returns>
         public bool FindPopup(string popupName)
         {
             return _controllerPopup.Get(popupName) == true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="menuName"></param>
         public void CloseMenu(string menuName)
         {
             _controllerMenu.Close(menuName);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hudName"></param>
         public void CloseHud(string hudName)
         {
             _controllerHud.Close(hudName);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="popupName"></param>
         public void ClosePopup(string popupName)
         {
             _controllerPopup.Close(popupName);
             CoverCheck();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="etcName"></param>
         public void CloseEtc(string etcName)
         {
             _controllerEtc.Close(etcName);
             CoverCheck();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void CoverCheck()
         {
             var countEtc = _controllerEtc.Count();
@@ -146,14 +226,20 @@ namespace Common.Global
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Clear()
         {
-            _controllerMenu.Clear();
-            _controllerHud.Clear();
-            _controllerPopup.Clear();
-            _controllerEtc.Clear();
+            _controllerMenu?.Clear();
+            _controllerHud?.Clear();
+            _controllerPopup?.Clear();
+            _controllerEtc?.Clear();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void BackKey()
         {
             if(_controllerEtc.Last() == true)
@@ -173,6 +259,9 @@ namespace Common.Global
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class CanvasController
     {
         private Canvas _canvas;
@@ -234,7 +323,10 @@ namespace Common.Global
             return ret;
         }
         
-        // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
         public void Close(string name)
         {
             var trans = _canvas.transform.Find(name);
@@ -250,28 +342,51 @@ namespace Common.Global
             Object.Destroy(trans.gameObject);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="transform"></param>
         public void Close(Transform transform)
         {
             Close(transform.name);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public Transform Get(string name)
         {
             var ret = _list.Where(obj => string.Compare(obj.name, name, StringComparison.Ordinal) == 0).ToList();
             return ret.Count == 1 ? ret[0].transform : null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public T Get<T>(string name) where T : UIObject.UIObject
         {
             var obj = _canvas.transform.Find(name);
             return obj.GetComponent<T>();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public int Count()
         {
             return _list.Count;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Transform Last()
         {
             var index = _canvas.transform.childCount - 1;
@@ -284,6 +399,9 @@ namespace Common.Global
             return trans;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Clear()
         {
             for (var i = 0; i < _canvas.transform.childCount ;i++)

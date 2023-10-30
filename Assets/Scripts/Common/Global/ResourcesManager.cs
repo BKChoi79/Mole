@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Common.Global.Singleton;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace Common.Global
 {
@@ -14,11 +15,21 @@ namespace Common.Global
         {
             list = new List<Object>();
 
-            Load();
+            //Load();
+            
+            //Addressables.InitializeAsync();
+            
             return true;
         }
+        
         public bool Load()
         {
+            //AssetBundle.LoadFromMemory (Async optional)
+            //AssetBundle.LoadFromFile (Async optional)
+            //AssetBundle.LoadFromStream (Async optional)
+            //UnityWebRequest's DownloadHandlerAssetBundle
+            //WWW.LoadFromCacheOrDownload (on Unity 5.6 or older)
+            //AssetBundleManifest manifest = (AssetBundleManifest)ab.LoadAsset("AssetBundleManifest");
             bundle = AssetBundle.LoadFromFile(path);
 
             return bundle != null;
@@ -28,7 +39,7 @@ namespace Common.Global
         {
             return Resources.Load<T>(path);
         }
-    
+
         public T[] LoadAllInBuild<T>(string path) where T : Object
         {
             return Resources.LoadAll<T>(path);

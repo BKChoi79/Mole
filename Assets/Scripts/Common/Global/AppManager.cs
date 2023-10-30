@@ -45,96 +45,48 @@ namespace Common.Global
             return (T)Enum.Parse(typeof(T), e);
         }
 
-        // ReSharper disable Unity.PerformanceAnalysis
-        private IEnumerator LoadScene(string sceneName, bool loading)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sceneName"></param>
+        /// <param name="loading"></param>
+        /// <returns></returns>
+        private IEnumerator LoadScene(string sceneName)
         {
-            CurrScene?.UnLoad();
+
+            CurrScene = null;
+            yield return null;
 
             UIManager.Instance.Clear();
-            CurrScene = null;
-            if (loading == true)
-            {
-                var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("SceneLoading", LoadSceneMode.Single);
-                async.allowSceneActivation = true;
-                float percent = 0;
-
-                //SceneLoading sceneLoading = new SceneLoading();
-                while (async.isDone == false || async.progress < 1.0f)
-                {
-                    yield return null;
-                }
-
-                var sceneLoading = GetSceneLoading("SceneLoading");
-                var asyncNext = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
-                asyncNext.allowSceneActivation = false;
-                asyncNext.completed += (AsyncOperation operation) => {
-                    if (CurrScene != null)
-                    {                    
-                        CurrScene.MainCamera = Camera.main;
-                        CurrScene.Init(Param);
-                    }
-                };
-    
-                // ���� ���� �ε�.
-                while (asyncNext.progress < 0.9f)
-                {
-                    percent = asyncNext.progress * 0.1f;// Mathf.Clamp01(asyncNext.progress / 0.9f);
-                    sceneLoading.SetPercent(percent);
-                    yield return null;
-                }
             
-                SceneBase changeScene = null;
-                if (_scenes.TryGetValue(sceneName, out var scene) == true)
+            var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+            async.allowSceneActivation = true;
+            async.completed += (AsyncOperation operation) => {
+
+                /*
+                if (_scenes.TryGetValue(sceneName, out SceneBase scene) == true)
                 {
-                    changeScene = scene;
+                    changeScnene = scene;
                 }
                 else 
                 {
-                    changeScene = CreateSceneObject(sceneName);
-                    _scenes.Add(sceneName, changeScene);
-                    changeScene.LoadBeforeAsync();
-                    var task = Task.Run(() => changeScene.Load());
-                    bool complete = false;
-                    while (complete == false)
-                    {
-                        percent = changeScene.Amount;
-                        sceneLoading.SetPercent(percent);
-                        complete = percent == 1.0f && sceneLoading.Complete();
-                        yield return null;
-                    }
+                    changeScnene = GetScene(sceneName);
+                    _scenes.Add(sceneName, changeScnene);
                 }
+                */
 
-                sceneLoading.SetPercent(1);
-                while (sceneLoading.Complete() == false)
-                {
-                    yield return null;
-                }
-   
-                asyncNext.allowSceneActivation = true;
-                CurrScene = changeScene;
-            }
-            else 
-            {
-                var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
-                async.allowSceneActivation = true;
-                async.completed += (AsyncOperation operation) => {
-                    SceneBase changeScnene = null;
-                    if (_scenes.TryGetValue(sceneName, out SceneBase scene) == true)
-                    {
-                        changeScnene = scene;
-                    }
-                    else 
-                    {
-                        changeScnene = CreateSceneObject(sceneName);
-                        _scenes.Add(sceneName, changeScnene);
-                    }
-              
-                    CurrScene = changeScnene;
-                    CurrScene.MainCamera = Camera.main;
-                    CurrScene.Init(Param);
-                };
-            }
+          
 
+                var root = GetRoot();
+                var changeScnene = GetScene(sceneName);
+                UIManager.Instance.SetRoot(root);
+
+                CurrScene = changeScnene;
+                CurrScene.MainCamera = Camera.main;
+                CurrScene.Init(Param);
+            };
+
+            yield return null;
             Debug.Log($"{Tag} Scene Load Complete");
         }
 
@@ -149,40 +101,57 @@ namespace Common.Global
             return list.Select(obj => obj.GetComponent<SceneLoading>()).FirstOrDefault(scene => scene != null);
         }
 
+        private SceneBase GetScene(string name)
+        {
+            if (_scenes.TryGetValue(name, out var selectScene) != false)
+            {
+                return selectScene;
+            }
+
+            var scene = SceneManager.GetActiveScene();
+            var objects = scene.GetRootGameObjects();
+            SceneBase sceneObject = null;
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (objects[i].name == "Scene")
+                {
+                    sceneObject = objects[i].GetComponent<SceneBase>();
+                    break;
+                }
+            }
+
+            return sceneObject;
+        }
+
+        private GameObject GetRoot()
+        {
+            GameObject root = null;
+            var scene = SceneManager.GetActiveScene();
+            var objects = scene.GetRootGameObjects();
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (objects[i].name == "UIRoot")
+                {
+                    root = objects[i];
+                    break;
+                }
+            }
+
+            return root;
+        }
+
         private SceneBase CreateSceneObject(string sceneName)
         {
-            if (_scenes.TryGetValue(sceneName, out var selectScene) != false) return null;
+            if (_scenes.TryGetValue(sceneName, out var selectScene) != false)
+            {
+                return null;
+            }
             
-            SceneBase scene = null; //GetSceneComponent(name);
+            SceneBase scene = null;
             switch (StringToEnum<SceneBase.Scenes>(sceneName))
             {
                 case SceneBase.Scenes.SceneIntro:
                     scene = new SceneIntro();
-                    break;
-                case SceneBase.Scenes.SceneMenu:
-                    scene = new SceneMenu();
-                    break;
-                case SceneBase.Scenes.SceneLoading:
-                    //CurrScene = new SceneLoading();
-                    break;
-
-                case SceneBase.Scenes.SceneGostop:
-                    scene = new SceneGostop();
-                    break;
-                case SceneBase.Scenes.SceneTileMap:
-                    scene = new SceneTileMap();
-                    break;
-                case SceneBase.Scenes.SceneAntHouse:
-                    scene = new SceneAntHouse();
-                    break;
-                case SceneBase.Scenes.game:
-                    scene = new SceneMatch3();
-                    break;
-                case SceneBase.Scenes.SceneChatScroll:
-                    scene = new SceneChatScroll();
-                    break;
-                case SceneBase.Scenes.SceneTest:
-                    scene = new SceneTest();
                     break;
             }
 
@@ -190,12 +159,18 @@ namespace Common.Global
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="loading"></param>
+        /// <param name="param"></param>
         public void ChangeScene(SceneBase.Scenes scene, bool loading = true, JSONObject param = null)
         {
             Param = param; 
 
             var sceneName = scene.ToString();
-            StartCoroutine(LoadScene(sceneName, loading));
+            StartCoroutine(LoadScene(sceneName));
         }
 
         public SceneBase GetCurrentScene()

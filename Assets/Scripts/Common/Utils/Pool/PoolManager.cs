@@ -12,20 +12,24 @@ namespace Common.Utils.Pool
     public class PoolManager : MonoSingleton<PoolManager>
     {
         public Dictionary<string, Pool<Transform>> dic = null;
-        
+        private Transform root = null;
+
         protected override bool Init()
         {
             dic = new Dictionary<string, Pool<Transform>>();
             return true;
         }
         
-        public void InitList(params Transform[] list)
+        public void InitList(Transform root, Transform[] list)
         {
             dic.Clear();
+
+            this.root = root;
+
             foreach (var prefab in list)
             {
                 var key = prefab.name;
-                dic.Add(key, Pool<Transform>.Create(prefab, transform, 1));
+                dic.Add(key, Pool<Transform>.Create(prefab, this.root, 10));
             }
         }
 
@@ -39,12 +43,14 @@ namespace Common.Utils.Pool
             return null;
         }
 
-        public void ReturnObject(Transform obj)
+        public bool ReturnObject(Transform obj)
         {
             if (dic.TryGetValue(obj.name, out Pool<Transform> pool) == true)
             {
-                pool.ReturnObject(obj);
+                return pool.ReturnObject(obj);
             }
+
+            return false;
         }
 
         public void RemoveAll()

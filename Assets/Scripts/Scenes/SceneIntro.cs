@@ -7,13 +7,15 @@ namespace Scenes
 {
     public class SceneIntro : SceneBase
     {
+        public UIMenuIntro menu = null;
+
         public override bool Init(JSONObject param)
         {
-            UIMenuIntro menu = UIManager.Instance.OpenMenu<UIMenuIntro>("UI/UIMenuIntro");
             if(menu != null)
             {
                 menu.InitMenu();
             }
+            
 
             return true;
         }

@@ -1,22 +1,35 @@
+using Common.Global;
+using Common.Scene;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Scenes
 {
-    public class SceneLoading : MonoBehaviour
+    public class SceneLoading : SceneBase
     {
         public UILoadingMenu menu = null;
+        private float percent = 0f;
 
-        public void SetPercent(float percent)
+        public override bool Init(JSONObject param)
         {
-            if (menu != null)
-            {
-                menu.SetPercent(percent);
-            }
+            MEC.Timing.RunCoroutine(LoadData());
+            return true;
         }
 
-        public bool Complete()
+        private IEnumerator<float> LoadData()
         {
-            return menu.Complete();
+            while(percent < 1.0f)
+            {
+                percent += 0.01f;
+                menu.SetPercent(percent);
+                yield return MEC.Timing.WaitForOneFrame;
+            }
+
+            menu.SetPercent(1.0f);
+            yield return MEC.Timing.WaitForSeconds(0.5f);
+
+            AppManager.Instance.ChangeScene(Scenes.SceneLobby);
         }
     }
 }

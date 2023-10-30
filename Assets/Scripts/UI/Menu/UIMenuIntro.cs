@@ -22,7 +22,7 @@ namespace UI.Menu
             string name = btn.name;
             if(name == "Button - Start")
             {
-                AppManager.Instance.ChangeScene(SceneBase.Scenes.SceneMenu);
+                AppManager.Instance.ChangeScene(SceneBase.Scenes.SceneLoading);
             }
         }
     }
